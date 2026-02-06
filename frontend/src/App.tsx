@@ -1,35 +1,49 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import { Chess } from 'chess.js';
+import { Chessboard } from 'react-chessboard';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  // Stan gry - obiekt Chess z biblioteki chess.js
+  const [game, setGame] = useState(new Chess());
+
+  // Funkcja wywoływana, gdy upuścisz figurę na pole
+  function onDrop(sourceSquare: string, targetSquare: string) {
+    try {
+      // Kopiujemy stan gry (React tego wymaga - immutability)
+      const gameCopy = new Chess(game.fen());
+      
+      // Próbujemy wykonać ruch
+      const move = gameCopy.move({
+        from: sourceSquare,
+        to: targetSquare,
+        promotion: 'q', // zawsze promuj na hetmana dla uproszczenia
+      });
+
+      // Jeśli ruch jest nielegalny, move będzie null
+      if (move === null) return false;
+
+      // Aktualizujemy stan
+      setGame(gameCopy);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      height: '100vh',
+      backgroundColor: '#302e2b' 
+    }}>
+      <div style={{ width: '400px', height: '400px' }}>
+        <Chessboard position={game.fen()} onPieceDrop={onDrop} />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
